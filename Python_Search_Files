@@ -1,0 +1,54 @@
+import os
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+# Prompt user for directory and location of file
+user_directory = input("Please enter a directory to search: (This includes the drive)\n")
+user_input_file = input("Please enter where the input file is located, including the file name: \n")
+default_output_directory = input("Please enter where you would like the output file to generate: \n")
+output_file = "search_results.txt"
+
+# Define file extension
+file_extension = input("Please enter the file extension to search through (e.g. 'txt', 'pdf'): \n")
+
+
+# Create a function to search directories and write a file with file paths
+def search_and_write(user_input_file, user_directory, output_file):
+    output_path = os.path.join(default_output_directory, output_file)
+    logging.info(f"Output file path: {output_path}")
+    with open(user_input_file, "r") as keywords:
+        logging.info(f"Opened input file: {user_input_file}")
+        with open(output_path, "w") as out:
+            logging.info(f"Opened output file: {output_path}")
+            for line in keywords:
+                keywords_list = line.strip().split(",")  # Split line into a list of keywords
+                found_keywords = set()  # Track found keywords in each file
+                for keyword in keywords_list:
+                    keyword = keyword.strip()  # Remove leading/trailing whitespace
+                    if keyword:  # check if keyword is not empty
+                        logging.info(f"Searching for keyword: {keyword}")
+                        out.write(f"Results for keyword: '{keyword}': \n")
+                        for root, dirs, files in os.walk(user_directory):
+                            for file in files:
+                                if file.endswith(
+                                        f".{file_extension}"):  # Check if file ends with the specified extension
+                                    file_path = os.path.join(root, file)
+                                    logging.info(f"Searching file: {file_path}")
+                                    with open(file_path, "r", encoding="latin-1") as f:
+                                        contents = f.read()
+                                        if keyword in contents:
+                                            logging.info(f"Found '{keyword}' in file: {file_path}")
+                                            found_keywords.add(keyword)  # Add found keyword to set
+                                            out.write(f"Found '{keyword}' in file: {file_path}\n")
+                                            out.write("\n")  # Add a new line between each search result
+
+            if found_keywords:
+                out.write(f"Found keywords '{' '.join(found_keywords)}' in file: {file_path}\n")
+                out.write("\n")  # Add a new line between each search result
+
+
+search_and_write(user_input_file, user_directory, output_file)
+
+print(f"Search results have been written to '{output_file}'.")
